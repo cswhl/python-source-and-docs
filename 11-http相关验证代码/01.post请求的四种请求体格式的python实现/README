@@ -1,0 +1,5 @@
+此次主要使用http://httpbin.org/来做演示。
+httpbin是一个专门用来测试 HTTP 请求及响应的网站，其github开源地址是https://github.com/requests/httpbin。
+作者另外一个开源库就是大名鼎鼎的requests，它也是我们演示代码中重要的部分。
+
+使用fiddler检测请求和应答信息
