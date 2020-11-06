@@ -1,0 +1,46 @@
+WebDriver介绍
+作用：WebDriver是 HTTP API和定义了语言无关接口的protocol,可以用于控制web browsers的行为
+Chrom的webdriver:https://chromedriver.chromium.org/
+firefox的webdriver:https://github.com/mozilla/geckodriver
+
+webdriver的路径应该保存在PATH中，便于自动查找；也可在代码中直接指定webdriver所在路径：
+driver = webdriver.Chrome('/path/to/chromedriver')
+Notice:注意路径使用斜杠"/",使用反斜杠"\"会产生路径错误的异常
+           路径中使用斜杠/和反斜杠\的区别:https://blog.csdn.net/xiaouncle/article/details/52812775
+
+Selenium介绍
+Selenium支持web browsers的自动化，用于网页自动化测试和自动化处理任务，是一系列工具和库的总体项目；Selenium是直接驱动浏览器，不是模拟，几乎不会被反爬工具检测到
+
+查找element的API：
+	 find_element_by_id("id_vaule")		// 根据ID进行定位
+	 find_element_by_name("name_vaule")	// 根据name定位
+	 find_element_by_class_name("class_name_vaule")	// 根据class名定位
+	 find_element_by_tag_name("input")		// 根据标签定位
+	 find_element_by_link_text("登录")		// 根据链接文本定位
+	 find_element_by_partial_link_text("部分text_vaule")	// 通过link文字模糊定位元素
+	 find_element_by_css_selector("input")		//通过标签名定位
+	 find_element_by_xpath("//*[@id='kw']")		// 使用xpath定位
+备注：元素
+
+页面操作API:
+	driver.send_keys('Hello')  // 向文本框架中输入文本
+	driver.back() 		//回到上一个页面
+	driver.forward() 	//切换到下一个页面
+	driver.maximize_window()	// 将浏览器最大化
+	driver.set_window_size(800, 720) //设置窗口大小为800*720
+	driver.get_screenshot_as_file("D:/data/test.png")   屏幕截图保存为***
+	driver.refresh() 	//重新加载页面,页面刷新
+	driver.close() 		//关闭当前页面
+	driver.quit() 		//关闭所有由当前测试脚本打开的页面
+
+XPath介绍
+XPath是一种在XML文档中定位元素的语言。因为HTML可以看做XML的一种实现，所以selenium用户可是使用这种强大语言在web应用中定位元素。xpath也可以通过元素的各种属性定位到元素
+Xpath的函数：
+contains(haystack, needle)	// 判断string变量haystack中是否包含needle指定的string
+text()	// 返回元素中的文本
+
+参考：
+用python操作浏览器的三种方式：https://cloud.tencent.com/developer/article/1566039
+XPath语法：https://www.w3schools.com/xml/xpath_syntax.asp
+   	   XPath functions: https://developer.mozilla.org/en-US/docs/Web/XPath/Functions
+Selenium tour:https://www.selenium.dev/documentation/en/getting_started_with_webdriver/
