@@ -4,6 +4,7 @@
 
 // gcc -o pthread-cp pthread-cp.c -pthread
 volatile long int a = 0;
+pthread_mutex_t aLock;
 
 void threadFunc(void *arg)
 {
@@ -11,7 +12,9 @@ void threadFunc(void *arg)
     long int localA = 0;
 
     for(i = 1; i < 500000; i++) {
+        pthread_mutex_lock(&aLock);
         a += i;
+        pthread_mutex_unlock(&aLock);
     }
 }
 
@@ -21,7 +24,9 @@ void threadFunc2(void *arg)
     long int localA = 0;
 
     for(i = 500000; i <= 1000000; i++) {
+        pthread_mutex_lock(&aLock);
         a += i;
+        pthread_mutex_unlock(&aLock);
     }
 }
 
@@ -36,10 +41,6 @@ int main(int argc, char **argv)
 
     pthread_join(one, NULL);
     pthread_join(two, NULL);
-
-    /*for(i = 500000; i <= 1000000; i++) {*/
-        /*a += i;*/
-    /*}*/
 
     printf("%ld\n", a);
 }
