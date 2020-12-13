@@ -6,11 +6,11 @@
 /// 捕获一个ctrl + c产生的SIGINT信号
 void handler(int sig) {
     printf("pid: %d get a signal: %d, process exit\n", getpid(), sig);
-    /*exit(1);*/
+    exit(1);
 }
 
 int main() {
-    signal(SIGINT, handler); // 捕获SIGINT信号
+    signal(2, handler);
     while(1) {
         printf("process running...%d\n", getpid());
         sleep(2);
