@@ -1,15 +1,26 @@
-# include <stdio.h>
+#include <stdio.h>
+#include <stdatomic.h>
+#include <pthread.h>
+#include <unistd.h>
 
-#define __stringify_1(x...) #x  // #的作用是将宏参数字符串化,如:#do = > "do"
-#define __stringify(x...)   __stringify_1(x)
+int cnt;
+atomic_int acnt;
+/*atomic_int v = ATOMIC_VAR_INIT(1); // 初始化一个新的原子对象*/
+/*atomic_init(&v, 5); // 初始化现有原子对象*/
 
-void sys_socket(int n) __attribute__((alias(__stringify(SyS_socket))));
-
-void SyS_socket(int num) {
-    printf("%d,%s\n", num, "you call SYS_socket");
+void* f(void* param) {
+    for(int n = 0; n < 1000; ++n) {
+      ++cnt;
+      atomic_fetch_add(&acnt, 1);
+    }
+    return NULL;
 }
 
 int main(void) {
-    sys_socket(1);
+    pthread_t t[10];
+    for (int i = 0; i < 10; i++) pthread_create(&t[i], NULL, f, NULL);
+    for (int i = 0; i < 10; i++) pthread_join(t[i], NULL);
+        printf("acnt = %u; cnt = %u;\n", acnt, cnt);
 }
+
 
