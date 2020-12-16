@@ -35,19 +35,21 @@ ptimer.start()
 
 
 def countdown(nticks):
+    # 每次线程被唤醒就递减
     while nticks > 0:
-        ptimer.wait_for_tick()
+        ptimer.wait_for_tick() # 阻塞
         print('T-minus', nticks)
         nticks -= 1
 
 
-def conutup(last):
+def countup(last):
     n = 0
+    # 每次线程被唤醒就递增
     while n < last:
-        ptimer.wait_for_tick()
+        ptimer.wait_for_tick() # 阻塞
         print('Counting', n)
         n += 1
 
 
 Thread(target=countdown, args=(10,)).start()
-Thread(target=countdown, args=(5,)).start()
+Thread(target=countup, args=(5,)).start()
