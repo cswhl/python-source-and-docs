@@ -1,6 +1,6 @@
 from socket import *
 
-ADDR = ('localhost', 21567)
+ADDR = ('localhost', 21568)
 
 while True:
     tcpCliSock = socket(AF_INET, SOCK_STREAM)
