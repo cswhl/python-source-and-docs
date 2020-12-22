@@ -8,7 +8,8 @@ import threading
 ADDR = 'localhost', 21568
 
 class MyRequestHandler(SRH):
-    '''创建请求类，处理客户请求'''
+    '''创建请求类，处理客户请求, stream请求处理器不能自定义setup()和finish()方法
+    '''
 
     def handle(self):
         # 请求处理
