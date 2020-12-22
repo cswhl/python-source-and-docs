@@ -14,6 +14,7 @@ def refill():
     print('Refilling candy...', end=' ')
     try:
         candytray.release() # 释放一个资源
+        pass
     except ValueError:
         print('full, skipping')
     else:
@@ -42,6 +43,7 @@ def consumer(loops):
 def _main():
     print('starting at:', ctime())
     nloops = randrange(2, 6)
+    print(f'nloops={nloops}')
     print('THE CANDY MACHINE (full with %d bars)!' % MAX)
     Thread(target=consumer, args=(randrange(nloops, nloops+MAX+2),)).start() # buyer
     Thread(target=producer, args=(nloops,)).start() # vendor
