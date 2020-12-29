@@ -1,0 +1,11 @@
+ssh_server4.py是一个远程命令执行服务器，可以执行linux命令，及交互：
+
+使用了以下模块：
+scoketserver：用于创建多线程的sockt流服务器端
+pexptext:用于执行交互命令
+subprocess:用于执行单发命令
+
+另外，优化报头信息，使用字典、JSON、struct解决socket粘包问题
+
+ssh_client2_and_3_and_4.py可作为ssh_server2、3、4的测试客户端
+ssh_client.py 只能作为ssh_server.py的测试客户端
