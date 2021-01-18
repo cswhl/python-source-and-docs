@@ -1,7 +1,4 @@
 
-#  reference Django ORM
-
-
 class Field:
     def __init__(self, column_type, primary_key, **kwargs):
         self.column_type = column_type
@@ -53,8 +50,15 @@ class MetaModel(type):
             attrs.pop(k)
 
         attrs['__mappings__'] = mappings
-        attrs['__table__'] = attrs.get('Meta').db_table or name
+        attrs['__table__'] = table_name = attrs.get('Meta').db_table or name
+
+        attrs['__insert__'] = f"SQL: INSERT INTO {table_name}({','.join(mappings.keys())}) VALUES({cls.create_args_positions(len(mappings))})"
+
         return type.__new__(cls, name, bases, attrs)
+
+    @staticmethod
+    def create_args_positions(args_num):
+        return ','.join('?' for _ in range(args_num))
 
 
 class Model(dict, metaclass=MetaModel):
@@ -70,10 +74,6 @@ class Model(dict, metaclass=MetaModel):
         except KeyError:
             raise AttributeError(f"'Model' object has no attribute '{key}'")
 
-    @staticmethod
-    def join(params):
-        return ','.join([f"'{x}'" if isinstance(x, str) else str(x) for x in params])
-
     def save(self):
         field = []
         values = []
@@ -81,7 +81,8 @@ class Model(dict, metaclass=MetaModel):
             field.append(k)
             values.append(getattr(self, k, v.default))
 
-        print(f"SQL: INSERT INTO {self.__table__}({','.join(field)}) VALUES({self.join(values)})")
+        values_temp = tuple(f"'{x}'" if isinstance(x, str) else str(x) for x in values)
+        print(self.__insert__.replace('?', '%s') % values_temp)
 
     def delete(self):
         pass
