@@ -41,18 +41,36 @@ class MetaModel(type):
         if name == 'Model':
             return type.__new__(cls, name, bases, attrs)
 
+        primaryKey = None
+        fields = []
         mappings = dict()
-        for k, v in attrs.items():
-            if isinstance(v, Field):
-                mappings[k] = v
+        for k_col, v_col in attrs.items():
+            if isinstance(v_col, Field):
+                mappings[k_col] = v_col
 
-        for k in mappings:
-            attrs.pop(k)
+                if v_col.primary_key:
+                    if primaryKey:
+                        raise Exception(f'Duplicat primary key for field: {k_col}')
+
+                    primaryKey = k_col
+                else:
+                    fields.append(k_col)
+
+        if primaryKey is None:
+            primaryKey = 'id'
+
+        for k_col in mappings:
+            attrs.pop(k_col)
 
         attrs['__mappings__'] = mappings
         attrs['__table__'] = table_name = attrs.get('Meta').db_table or name
+        attrs['__pimary_key__'] = primaryKey
+        attrs['__field__'] = fields
 
-        attrs['__insert__'] = f"SQL: INSERT INTO {table_name}({','.join(mappings.keys())}) VALUES({cls.create_args_positions(len(mappings))})"
+        attrs['__insert__'] = f"INSERT INTO {table_name}({','.join(mappings.keys())}) VALUES({cls.create_args_positions(len(mappings))})"
+        attrs['__delete__'] = f"DELETE FROM {table_name} WHERE {primaryKey} = ?"
+        attrs['__update__'] = f"UPDATE {table_name} SET {','.join(map(lambda x: f'{x} = ?', fields))} WHERE {primaryKey} = ?"
+        attrs['__select__'] = f"SELECT {primaryKey}, {','.join(fields)} FROM {table_name}"
 
         return type.__new__(cls, name, bases, attrs)
 
