@@ -1,13 +1,15 @@
-import multiprocessing
+import subprocess
 
-def foo(i):
-    print ('called function in process: %s' %i)
-    return
+s = subprocess.Popen("python", stdout=subprocess.PIPE, stderr= subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+with s.stdin:
+    s.stdin.write(b"import os\n")
+    s.stdin.write(b"print(os.environ)")
 
-if __name__ == '__main__':
-    Process_jobs = []
-    for i in range(5):
-        p = multiprocessing.Process(foo, (i,))
-        Process_jobs.append(p)
-        p.start()
-        p.join()
+with s.stdout:
+    out = s.stdout.read().decode("GBK")
+
+with s.stderr:
+    error = s.stderr.read().decode("GBK")
+
+print(f'out={out}')
+print(f'error={error}')

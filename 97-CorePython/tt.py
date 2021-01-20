@@ -1,13 +1,14 @@
-import multiprocessing
+#!/usr/bin/env python
+# coding: utf-8
 
-def function_square(data):
-    result = data*data
-    return result
+import subprocess
 
-if __name__ == '__main__':
-    inputs = list(range(100))
-    pool = multiprocessing.Pool(processes=4)
-    pool_outputs = pool.map_async(function_square, inputs)
-    pool.close()
-    pool.join()
-    print ('Pool    :', pool_outputs.get())
+def test(size):
+    print('start')
+    cmd = 'dd if=/dev/urandom bs=1 count=%d 2>/dev/null' % size
+    p = subprocess.Popen(args=cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    # p.communicate()
+    p.wait()
+    print('end')
+
+test(64*1024 + 1)
