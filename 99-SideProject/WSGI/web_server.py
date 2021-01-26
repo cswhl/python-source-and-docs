@@ -4,8 +4,10 @@ import socket
 from time import ctime
 import threading
 import re
+import os
 
-ADDR = 'localhost', 21568
+ADDR = 'localhost', 9999
+ADDR = '0.0.0.0', 9999
 
 client_addr = []
 client_socket = []
@@ -22,7 +24,6 @@ class HttpConst(object):
     POST = 'POST '
     HOST = 'Host: '
 
-class 
 
 class ThreadedTCPRequestHandler(BaseRequestHandler):
     '''继承超类，实现自定义setup、handle、finish方法
@@ -87,4 +88,5 @@ if __name__ == '__main__':
     ThreadingTCPServer.allow_reuse_address = True  # 允许地址复用
     with ThreadingTCPServer(ADDR, ThreadedTCPRequestHandler) as wsgi_server:
         print('waiting for connection')
+        print(os.getpid())
         wsgi_server.serve_forever()  # 运行服务器，直到shutdown()
