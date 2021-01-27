@@ -6,7 +6,6 @@ import threading
 import re
 import os
 
-ADDR = 'localhost', 9999
 ADDR = '0.0.0.0', 9999
 
 client_addr = []
@@ -23,6 +22,41 @@ class HttpConst(object):
     GET = 'GET '
     POST = 'POST '
     HOST = 'Host: '
+
+
+class HttpHandler(object):
+    def __init__(self, request_data):
+        self.request_data = request_data
+
+    def _get_file_name(self):
+        # 1. get file_name
+        request_data_lines = self.request_data.splitlines()
+        print(request_data_lines)
+        file_name = ""
+        ret = re.match(r"[^/]+(/[^ ]*)", request_data_lines[0])
+        if ret:
+            file_name = '/index.html' if ret.group(
+                1) == '/' else ret.group(1)
+
+        print(f"file_name={file_name}")
+        return file_name
+
+    def get_response(self):
+        # 2. deal response, and return
+        try:
+            with open('./html' + self._get_file_name(), 'rb') as f:
+                response_body = f.read()
+        except Exception:
+            response_line = "HTTP/1.1 404 NOT FOUND"
+            response_body = 'file not found'.encode('utf8')
+        else:
+            response_line = "HTTP/1.1 200 OK"
+
+        response = f'{response_line}' + HttpConst.CRLF
+        response += HttpConst.CRLF
+        response = response.encode('utf8')
+
+        return (response, response_body)
 
 
 class ThreadedTCPRequestHandler(BaseRequestHandler):
@@ -51,32 +85,10 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
                 break       # 记得跳出while循环
 
             if request_data:    # 判断是否接收到数据
-                request_data_lines = request_data.splitlines()
-                print(request_data_lines)
-                # 1. get file_name
-                file_name = ""
-                ret = re.match(r"[^/]+(/[^ ]*)", request_data_lines[0])
-                if ret:
-                    file_name = '/index.html' if ret.group(
-                        1) == '/' else ret.group(1)
-
-                print(f"file_name={file_name}")
-
-                # 2. deal response, and return
-                try:
-                    with open('./html' + file_name, 'rb') as f:
-                        html_content = f.read()
-                except Exception:
-                    response_header = "HTTP/1.1 404 NOT FOUND"
-                    html_content = 'file not found'.encode('utf8')
-                else:
-                    response_header = "HTTP/1.1 200 OK"
-
-                response = f'{response_header}' + HttpConst.CRLF
-                response += HttpConst.CRLF
-
-                self.request.send(response.encode('utf8'))
-                self.request.send(html_content)
+                http_handler = HttpHandler(request_data)
+                response, response_body = http_handler.get_response()
+                self.request.send(response)
+                self.request.send(response_body)
 
     def finish(self):
         print(self.ip + ":" + str(self.port) + "断开连接！")
