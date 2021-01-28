@@ -5,9 +5,10 @@ from time import ctime
 import threading
 import re
 import os
+import sys
+import mini_frame
 
-ADDR = '0.0.0.0', 9999
-
+ADDR = '0.0.0.0', int(sys.argv[1])
 client_addr = []
 client_socket = []
 
@@ -42,21 +43,40 @@ class HttpHandler(object):
         return file_name
 
     def get_response(self):
-        # 2. deal response, and return
-        try:
-            with open('./html' + self._get_file_name(), 'rb') as f:
-                response_body = f.read()
-        except Exception:
-            response_line = "HTTP/1.1 404 NOT FOUND"
-            response_body = 'file not found'.encode('utf8')
+        # deal response, and return
+
+        # 1. find static source
+        file_name = self._get_file_name()
+        if not file_name.endswith(".py"):
+            try:
+                with open('./html' + self._get_file_name(), 'rb') as f:
+                    response_body = f.read()
+            except Exception:
+                response_line = "HTTP/1.1 404 NOT FOUND"
+                response_body = 'file not found'.encode('utf8')
+            else:
+                response_line = "HTTP/1.1 200 OK"
+
+        # 2. find dynamic
         else:
             response_line = "HTTP/1.1 200 OK"
+
+            # 2.1 set env
+            env = dict()
+            env['path_info'] = file_name
+            # 2.2 set start_response
+            response_body = mini_frame.application(env, self._set_response_header).encode('utf8')
 
         response = f'{response_line}' + HttpConst.CRLF
         response += HttpConst.CRLF
         response = response.encode('utf8')
 
         return (response, response_body)
+
+    def _set_response_header(self, status, headers):
+        self.satus = status
+        # elem tuple：(name, value)?
+        self.headers = []
 
 
 class ThreadedTCPRequestHandler(BaseRequestHandler):
@@ -89,6 +109,7 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
                 response, response_body = http_handler.get_response()
                 self.request.send(response)
                 self.request.send(response_body)
+            break
 
     def finish(self):
         print(self.ip + ":" + str(self.port) + "断开连接！")
@@ -100,5 +121,4 @@ if __name__ == '__main__':
     ThreadingTCPServer.allow_reuse_address = True  # 允许地址复用
     with ThreadingTCPServer(ADDR, ThreadedTCPRequestHandler) as wsgi_server:
         print('waiting for connection')
-        print(os.getpid())
         wsgi_server.serve_forever()  # 运行服务器，直到shutdown()
