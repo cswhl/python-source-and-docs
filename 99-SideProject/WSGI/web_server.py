@@ -2,9 +2,7 @@ from socketserver import BaseRequestHandler
 from socketserver import ThreadingTCPServer
 import socket
 from time import ctime
-import threading
 import re
-import os
 import sys
 import mini_frame
 
@@ -29,7 +27,7 @@ class HttpHandler(object):
     def __init__(self, request_data):
         self.request_data = request_data
 
-    def _get_file_name(self):
+    def _set_path_info(self):
         # 1. get file_name
         request_data_lines = self.request_data.splitlines()
         print(request_data_lines)
@@ -39,54 +37,54 @@ class HttpHandler(object):
             file_name = '/index.html' if ret.group(
                 1) == '/' else ret.group(1)
 
-        print(f"file_name={file_name}")
-        return file_name
+        self.file_name = file_name
+
+    def _set_static_source(self):
+        self.response_headers = ''
+        try:
+            with open('./html' + self.file_name, 'rb') as f:
+                self.response_body = f.read()
+        except Exception:
+            self.response_line = "HTTP/1.1 404 NOT FOUND"
+            self.response_body = 'file not found'.encode('utf8')
+        else:
+            self.response_line = "HTTP/1.1 200 OK"
+
+    def _set_dynamic_source(self):
+        self.response_headers = ''
+        env = dict()
+        env['path_info'] = self.file_name
+        self.response_body = mini_frame.application(
+            env, self.set_response_header).encode('utf8')
+        self.response_line = f'HTTP/1.1 {self.status}'
+        for header in self.headers:
+            self.response_headers += f'{header[0]}: {header[1]}' + HttpConst.CRLF
+
+    def _set_response(self):
+        self.response = self.response_line + HttpConst.CRLF
+        self.response += self.response_headers + HttpConst.CRLF
+        self.response = self.response.encode('utf8') + self.response_body
 
     def get_response(self):
-        # deal response, and return
+        self._set_path_info()
 
-        # 1. find static source
-        file_name = self._get_file_name()
-        if not file_name.endswith(".py"):
-            try:
-                with open('./html' + self._get_file_name(), 'rb') as f:
-                    response_body = f.read()
-            except Exception:
-                response_line = "HTTP/1.1 404 NOT FOUND"
-                response_body = 'file not found'.encode('utf8')
-            else:
-                response_line = "HTTP/1.1 200 OK"
-
-        # 2. find dynamic
+        if not self.file_name.endswith(".py"):
+            self._set_static_source()
         else:
-            response_line = "HTTP/1.1 200 OK"
+            self._set_dynamic_source()
+        self._set_response()
 
-            # 2.1 set env
-            env = dict()
-            env['path_info'] = file_name
-            # 2.2 set start_response
-            response_body = mini_frame.application(env, self._set_response_header).encode('utf8')
+        return self.response
 
-        response = f'{response_line}' + HttpConst.CRLF
-        response += HttpConst.CRLF
-        response = response.encode('utf8')
-
-        return (response, response_body)
-
-    def _set_response_header(self, status, headers):
-        self.satus = status
-        # elem tuple：(name, value)?
-        self.headers = []
+    def set_response_header(self, status, headers):
+        self.status = status
+        self.headers = [('server', 'web v1.0')] + headers
 
 
 class ThreadedTCPRequestHandler(BaseRequestHandler):
-    '''继承超类，实现自定义setup、handle、finish方法
-    允许地址复用、长连接、超时断开
-    如果是继承StreamRequestHandler子类则无法自定义setup、finish方法'''
-
     ip = ""
     port = 0
-    timeOut = 3     # 设置超时时间变量
+    timeOut = 3
 
     def setup(self):
         self.ip = self.client_address[0].strip()     # 获取客户端的ip
@@ -106,9 +104,8 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
 
             if request_data:    # 判断是否接收到数据
                 http_handler = HttpHandler(request_data)
-                response, response_body = http_handler.get_response()
+                response = http_handler.get_response()
                 self.request.send(response)
-                self.request.send(response_body)
             break
 
     def finish(self):
