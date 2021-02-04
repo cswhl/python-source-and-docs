@@ -109,7 +109,19 @@ class HttpHandler(object):
         self.headers = [('server', 'web v1.0')] + headers
 
 
-def get_():
+def get_param_num(param):
+    if len(param) == 3:
+        return True
+    return False
+
+def get_port(param):
+    if get_param_num(param):
+        return param[1]
+    return None
+
+
+
+def get_cli_param():
     if len(sys.argv) == 3:
         port = sys.argv[1]
         frame_app_name = sys.argv[2]
@@ -135,7 +147,7 @@ def get_():
 
 if __name__ == '__main__':
     ADDR = '0.0.0.0', int(sys.argv[1])
-    get_()
+    get_cli_param()
     ThreadingTCPServer.allow_reuse_address = True  # 允许地址复用
     with ThreadingTCPServer(ADDR, ThreadedTCPRequestHandler) as wsgi_server:
         print('waiting for connection')
