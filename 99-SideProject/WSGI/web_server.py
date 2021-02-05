@@ -98,56 +98,48 @@ class HttpHandler(object):
     def _set_dynamic_page_info(self):
         env = dict()
         env['path_info'] = self.file_path
-        self.response_body = mini_frame.application( env, self.set_response_header).encode('utf8') # noqa
+        self.response_body = mini_frame.application(env, self.set_response_header).encode('utf8')  # noqa
         self.response_line = f'HTTP/1.1 {self.status}'
         self.response_headers = ''
         for header in self.headers:
-            self.response_headers += f'{header[0]}: {header[1]}' + HttpConst.CRLF # noqa
+            self.response_headers += f'{header[0]}: {header[1]}' + HttpConst.CRLF  # noqa
 
     def set_response_header(self, status, headers):
         self.status = status
         self.headers = [('server', 'web v1.0')] + headers
 
 
-def get_param_num(param):
-    if len(param) == 3:
-        return True
-    return False
+class CliParam:
+    def __init__(self, param):
+        self.param = param
 
-def get_port(param):
-    if get_param_num(param):
-        return param[1]
-    return None
+    def is_validate_param_num(self):
+        if len(self.param) == 3:
+            return True
 
+    def get_port(self):
+        if self.is_validate_param_num():
+            return self.param[1]
 
+    def get_app_of_frame(self):
+        if not self.is_validate_param_num():
+            return
 
-def get_cli_param():
-    if len(sys.argv) == 3:
-        port = sys.argv[1]
-        frame_app_name = sys.argv[2]
-        print(port, frame_app_name)
-    else:
-        print("请按以下方式运行:")
-        print("python3 xxx.py 9999 mini_frame:application")
-        return
+        frame_app_name = self.param[2]
+        ret = re.match(r'([^:]+):(.*)', frame_app_name)
+        if not ret:
+            return
 
-    ret = re.match(r'([^:]+):(.*)', frame_app_name)
-    if ret:
         frame_name = ret.group(1)
         app_name = ret.group(2)
-        print(frame_name, app_name)
-    else:
-        print("请按以下方式运行:")
-        print("python3 xxx.py 9999 mini_frame:application")
-        return
+        frame = __import__(frame_name)
+        app = getattr(frame, app_name)
+        return app
 
-    frame = __import__(frame_name)
-    app = getattr(frame, app_name)
 
 
 if __name__ == '__main__':
     ADDR = '0.0.0.0', int(sys.argv[1])
-    get_cli_param()
     ThreadingTCPServer.allow_reuse_address = True  # 允许地址复用
     with ThreadingTCPServer(ADDR, ThreadedTCPRequestHandler) as wsgi_server:
         print('waiting for connection')
