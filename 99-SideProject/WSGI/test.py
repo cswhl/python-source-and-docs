@@ -2,6 +2,8 @@ import web_server as ws
 import unittest
 import types
 
+class test_HttpHandler(unittest.TestCase):
+    pass
 
 class test_CliParam(unittest.TestCase):
     param0 = 'web_server.py mini_frame:application'.split()
@@ -12,22 +14,24 @@ class test_CliParam(unittest.TestCase):
 
     def test_is_validate_param_num(self):
         test_ins1 = ws.CliParam(self.param0)
-        self.assertEqual(bool(test_ins1.is_validate_param_num()), False)
+        self.assertEqual(bool(test_ins1._is_validate_param_num()), False)
         test_ins2 = ws.CliParam(self.param1)
-        self.assertEqual(test_ins2.is_validate_param_num(), True)
+        self.assertEqual(test_ins2._is_validate_param_num(), True)
 
     def test_port(self):
         test_ins1 = ws.CliParam(self.param2)
-        self.assertEqual(test_ins1.get_port().isdigit(), False)
+        self.assertEqual(test_ins1._get_port(), None)
         test_ins2 = ws.CliParam(self.param1)
-        self.assertEqual(test_ins2.get_port().isdigit(), True)
+        self.assertEqual(test_ins2._get_port(), '9999')
 
     def test_frame_app(self):
         test_ins1 = ws.CliParam(self.param3)
-        self.assertNotIsInstance(test_ins1.get_app_of_frame(), types.FunctionType)
+        self.assertEqual(test_ins1._get_app_of_frame(), None)
         test_ins2 = ws.CliParam(self.param4)
-        self.assertIsInstance(test_ins2.get_app_of_frame(), types.FunctionType)
+        self.assertIsInstance(test_ins2._get_app_of_frame(), types.FunctionType)
 
+class test_get_conf(unitest.TestCase):
+    pass
 
 def suite():
     suite = unittest.TestSuite()

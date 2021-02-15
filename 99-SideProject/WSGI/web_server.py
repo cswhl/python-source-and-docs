@@ -4,7 +4,7 @@ import socket
 from time import ctime
 import re
 import sys
-import mini_frame
+import json
 
 client_addr = []
 client_socket = []
@@ -44,7 +44,8 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
                 break       # 记得跳出while循环
 
             if request_data:
-                http_handler = HttpHandler(request_data)
+                http_handler = HttpHandler(
+                    request_data, frame_app, conf_dict['static_path'])
                 response = http_handler.get_response()
                 self.request.send(response)
             break
@@ -56,9 +57,11 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
 
 
 class HttpHandler(object):
-    def __init__(self, request_data):
+    def __init__(self, request_data, application, static_path):
         self.request_data = request_data
         self.file_path = self._get_path_of_file()
+        self.application = application
+        self.static_path = static_path
 
     def _get_path_of_file(self):
         request_data_lines = self.request_data.splitlines()
@@ -71,7 +74,7 @@ class HttpHandler(object):
         return file_path
 
     def get_response(self):
-        if not self.file_path.endswith(".py"):
+        if not self.file_path.endswith(".html"):
             self._set_static_page_info()
         else:
             self._set_dynamic_page_info()
@@ -87,7 +90,7 @@ class HttpHandler(object):
     def _set_static_page_info(self):
         self.response_headers = ''
         try:
-            with open('./html' + self.file_path, 'rb') as f:
+            with open(self.static_path + self.file_path, 'rb') as f:
                 self.response_body = f.read()
         except Exception:
             self.response_line = "HTTP/1.1 404 NOT FOUND"
@@ -98,7 +101,7 @@ class HttpHandler(object):
     def _set_dynamic_page_info(self):
         env = dict()
         env['path_info'] = self.file_path
-        self.response_body = mini_frame.application(env, self.set_response_header).encode('utf8')  # noqa
+        self.response_body = self.application(env, self.set_response_header).encode('utf8')  # noqa
         self.response_line = f'HTTP/1.1 {self.status}'
         self.response_headers = ''
         for header in self.headers:
@@ -113,18 +116,19 @@ class CliParam:
     def __init__(self, param):
         self.param = param
 
-    def is_validate_param_num(self):
-        if len(self.param) == 3:
-            return True
+    def get_port_and_application(self):
+        if not self._is_validate_param_num():
+            return (None, None)
 
-    def get_port(self):
-        if self.is_validate_param_num():
+        port = self._get_port()
+        application = self._get_app_of_frame()
+        return port, application
+
+    def _get_port(self):
+        if self.param[1].isdigit():
             return self.param[1]
 
-    def get_app_of_frame(self):
-        if not self.is_validate_param_num():
-            return
-
+    def _get_app_of_frame(self):
         frame_app_name = self.param[2]
         ret = re.match(r'([^:]+):(.*)', frame_app_name)
         if not ret:
@@ -136,11 +140,25 @@ class CliParam:
         app = getattr(frame, app_name)
         return app
 
+    def _is_validate_param_num(self):
+        if len(self.param) == 3:
+            return True
 
 
 if __name__ == '__main__':
-    ADDR = '0.0.0.0', int(sys.argv[1])
-    ThreadingTCPServer.allow_reuse_address = True  # 允许地址复用
-    with ThreadingTCPServer(ADDR, ThreadedTCPRequestHandler) as wsgi_server:
-        print('waiting for connection')
-        wsgi_server.serve_forever()  # 运行服务器，直到shutdown()
+    with open("./web_server.conf") as conf:
+        conf_dict = json.loads(''.join(conf.read().split('\n')))
+        sys.path.append(conf_dict['dynamic_path'])
+
+    cli_param = CliParam(sys.argv)
+    port, frame_app = cli_param.get_port_and_application()
+
+    if all((port, frame_app)):
+        ADDR = '0.0.0.0', int(port)
+        ThreadingTCPServer.allow_reuse_address = True  # 允许地址复用
+        with ThreadingTCPServer(ADDR, ThreadedTCPRequestHandler) as wsgi_server:
+            print('waiting for connection')
+            wsgi_server.serve_forever()  # 运行服务器，直到shutdown()
+
+    print("请按照以下方式运行:")
+    print("python3 xxx.py 9999 frame:application")
