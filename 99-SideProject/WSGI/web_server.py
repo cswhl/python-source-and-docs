@@ -39,6 +39,7 @@ class ThreadedTCPRequestHandler(BaseRequestHandler):
         while True:  # while循环
             try:
                 request_data = self.request.recv(1024).decode('utf8')
+                print(request_data)
             except socket.timeout:  # 如果接收超时会抛出socket.timeout异常
                 print(self.ip + ":" + str(self.port) + "接收超时！即将断开连接！")
                 break       # 记得跳出while循环
