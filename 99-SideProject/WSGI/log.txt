@@ -1,0 +1,4 @@
+2021-02-18 13:29:40,710 - mini_frame.py[line:250] - INFO: 你访问的是/index.html
+2021-02-18 13:30:00,960 - mini_frame.py[line:250] - INFO: 你访问的是/indefffdsffx.html
+2021-02-18 13:30:00,961 - mini_frame.py[line:258] - WARNING: 没有对应的函数...
+2021-02-18 13:30:15,746 - mini_frame.py[line:250] - INFO: 你访问的是/index.html

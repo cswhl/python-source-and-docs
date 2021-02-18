@@ -2,6 +2,7 @@ from functools import wraps
 from pymysql import connect
 import re
 from urllib import parse
+from log import logger
 
 url_func_dict = dict()
 
@@ -246,12 +247,15 @@ def application(env, start_response):
     start_response(status, headers)
 
     file_name = env['path_info']
+    logger.info(f"你访问的是{file_name}")
+
     try:
         for url, func in url_func_dict.items():
             ret = re.match(url, file_name)
             if ret:
                 return func(ret)
         else:
+            logger.warning("没有对应的函数...")
             return f"请求url:{file_name} 没有对应的函数..."
     except KeyError:
         return '异常，file not found'
