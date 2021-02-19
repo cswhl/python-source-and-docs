@@ -16,25 +16,13 @@ def route(url):
         return call_func
     return set_func
 
+# 抽象底层，消除重复?
+
 
 @route('/index.html')
 def index(ret):
     with open("./templates/index.html") as f:
         content = f.read()
-
-    # 创建连接数据库
-    connection = connect(
-        host='localhost',
-        port=3306,
-        user='root',
-        password='1234',
-        database='stock_db',
-        charset='utf8')
-
-    with connection:
-        with connection.cursor() as cs:
-            cs.execute('select * from info;')
-            stock_infos = cs.fetchall()
 
     tr_template = ''' <tr>
             <th>%s</th>
@@ -50,6 +38,11 @@ def index(ret):
             </th>
         </tr>
         '''
+
+    sql = """select * from info;"""
+    mysql = Mysql()
+    stock_infos = mysql.fetchall(sql)
+
     rep_html = ''
     for line in stock_infos:
         rep_html += tr_template % (line[0],
@@ -64,6 +57,8 @@ def index(ret):
 
     content = re.sub(r"\{%content%\}", rep_html, content)
     return content
+
+
 
 
 @route('/center.html')
@@ -120,6 +115,24 @@ def center(ret):
     return content
 
 
+class Mysql:
+    def __init__(self):
+        self.connection = connect(
+            host='localhost',
+            port=3306,
+            user='root',
+            password='1234',
+            database='stock_db',
+            charset='utf8')
+
+    def fetchall(self, sql):
+        with self.connection:
+            with self.connection.cursor() as cs:
+                cs.execute(sql)
+                # cs.execute('select * from info;')
+                self.result = cs.fetchall()
+                return self.result
+
 @route(r"/add/(\d+)\.html")
 def add_focus(ret):
     stock_code = ret.group(1)
@@ -154,6 +167,7 @@ def add_focus(ret):
             connection.commit()
 
     return "focus success!"
+
 
 @route(r"/del/(\d+)\.html")
 def del_focus(ret):
@@ -190,6 +204,7 @@ def del_focus(ret):
 
     return "cancle success!"
 
+
 @route(r"/update/(\d+)\.html")
 def show_update_page(ret):
 
@@ -218,6 +233,7 @@ def show_update_page(ret):
     content = re.sub(r"\{%note_info%\}", note_info, content)
     return content
 
+
 @route(r"/update/(\d+)/(.*)\.html")
 def update_focus(ret):
     stock_code = ret.group(1)
@@ -240,6 +256,7 @@ def update_focus(ret):
             connection.commit()
 
     return "update success!"
+
 
 def application(env, start_response):
     status = '200 ok'
