@@ -16,8 +16,6 @@ def route(url):
         return call_func
     return set_func
 
-# 抽象底层，消除重复?
-
 
 @route('/index.html')
 def index(ret):
@@ -59,27 +57,14 @@ def index(ret):
     return content
 
 
-
-
 @route('/center.html')
 def center(ret):
     with open("./templates/center.html") as f:
         content = f.read()
 
-    # 创建连接数据库
-    connection = connect(
-        host='localhost',
-        port=3306,
-        user='root',
-        password='1234',
-        database='stock_db',
-        charset='utf8')
-
-    with connection:
-        with connection.cursor() as cs:
-            cs.execute(
-                'select i.code, i.short, i.chg, i.turnover, i.price, i.highs, f.note_info from info as i inner join focus as f on i.id=f.info_id;')
-            stock_infos = cs.fetchall()
+    sql = """select i.code, i.short, i.chg, i.turnover, i.price, i.highs, f.note_info from info as i inner join focus as f on i.id=f.info_id;"""
+    mysql = Mysql()
+    stock_infos = mysql.fetchall(sql)
 
     tr_template = ''' <tr>
             <th>%s</th>
@@ -129,9 +114,7 @@ class Mysql:
         with self.connection:
             with self.connection.cursor() as cs:
                 cs.execute(sql)
-                # cs.execute('select * from info;')
-                self.result = cs.fetchall()
-                return self.result
+                return cs.fetchall()
 
 @route(r"/add/(\d+)\.html")
 def add_focus(ret):
