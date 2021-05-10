@@ -12,7 +12,12 @@ python manage.py runserver 192.168.18.129:8000
 ```
 
 3、阿里云部署:
+修改angular的package.json:
 ```
-ng serve --host=0.0.0.0 --port=8889
+"start": "ng serve --port=8889 --host=0.0.0.0",
+```
+运行angular应用:
+```
+npm run start
 ```
 
