@@ -11,3 +11,8 @@ cd djangoAPI
 python manage.py runserver 192.168.18.129:8000
 ```
 
+3、阿里云部署:
+```
+ng serve --host=0.0.0.0 --port=8889
+```
+
