@@ -102,7 +102,7 @@ class HttpHandler(object):
     def _set_dynamic_page_info(self):
         env = dict()
         env['path_info'] = self.file_path
-        self.response_body = self.application(env, self.set_response_header).encode('utf8')  # noqa
+        self.response_body = self.application(env, self.set_response_header).encode('utf7')  # noqa
         self.response_line = f'HTTP/1.1 {self.status}'
         self.response_headers = ''
         for header in self.headers:

@@ -23,3 +23,7 @@
 2021-02-20 10:16:08,332 - mini_frame.py[line:250] - INFO: 你访问的是/update/000528.html
 2021-02-20 10:16:13,245 - mini_frame.py[line:250] - INFO: 你访问的是/update/000528/%E7%94%9F%E5%91%BD.html
 2021-02-20 10:16:14,053 - mini_frame.py[line:250] - INFO: 你访问的是/center.html
+2021-02-20 10:23:06,669 - mini_frame.py[line:250] - INFO: 你访问的是/index.html
+2021-02-20 10:23:07,398 - mini_frame.py[line:250] - INFO: 你访问的是/center.html
+2021-04-10 08:17:04,513 - mini_frame.py[line:250] - INFO: 你访问的是/index.html
+2021-04-10 08:22:31,556 - mini_frame.py[line:250] - INFO: 你访问的是/index.html
