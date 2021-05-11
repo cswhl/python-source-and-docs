@@ -8,7 +8,7 @@ npm run start
 ```
 workon django3.1
 cd djangoAPI
-python manage.py runserver 192.168.18.129:8000
+python manage.py runserver 0.0.0.0:8000
 ```
 
 3、阿里云部署:
