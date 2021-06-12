@@ -71,6 +71,13 @@ public class hashmap {
         hashMap.forEach((k,v) -> System.out.println("key = " +k + ",value = " + v));
         System.out.println("");
 
+        // 使用Stream
+        System.out.println("使用stream遍历映射项:");
+        hashMap.entrySet().stream().forEach(entry -> System.out.println("Key = " + entry.getKey() + ",value = " + entry.getValue()));
+        System.out.println("使用parrallelStream遍历映射项:");
+        hashMap.entrySet().parallelStream().forEach(entry -> System.out.println("Key = " + entry.getKey() + ",value = " + entry.getValue()));
+        System.out.println("");
+
         // hampMap转换为集合
         System.out.println("hampMap转换为集合:");
         Set<Map.Entry<String, Integer>> entries = hashMap.entrySet();
